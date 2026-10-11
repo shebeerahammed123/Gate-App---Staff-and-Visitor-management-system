@@ -1,0 +1,15 @@
+tile {
+border-radius: 1rem;
+padding: 2.5rem;
+background: white;
+box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+text-align: center;
+transition: transform .15s ease, box-shadow .15s ease;
+}
+.tile:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(0,0,0,0.08); }
+.keyboard {
+position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid #ddd; padding: .5rem; display: none;
+}
+.keyboard .key { user-select: none; display: inline-block; padding: .6rem 1rem; margin: .25rem; border: 1px solid #ddd; border-radius: .5rem; cursor: pointer; }
+.keyboard .row { display: block; text-align: center; }
+.keyboard .key:active{ background:#f5f5f5; }
