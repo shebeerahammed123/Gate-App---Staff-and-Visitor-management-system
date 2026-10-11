@@ -48,15 +48,6 @@ CREATE TABLE IF NOT EXISTS staff_attendance (
         ON DELETE CASCADE
 );
 
--- Pupil records
-CREATE TABLE IF NOT EXISTS pupil (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    year_group VARCHAR(20),
-    reason VARCHAR(255),
-    clock_in DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Visitor check-in/check-out records
 CREATE TABLE IF NOT EXISTS visitors_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
