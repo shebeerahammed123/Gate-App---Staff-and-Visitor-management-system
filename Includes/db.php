@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$db = 'schoolgate';
+$db = 'gateapp';
 $user = 'root';
 $pass = 'rWwR7qMQ2ecRK06';
 $charset = 'utf8mb4';
