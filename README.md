@@ -1,145 +1,147 @@
-# Gate App – Staff and Visitor Management System
-
-**Gate App** is a web-based staff and visitor management system designed to help organisations manage people entering and leaving their premises.
-
-Originally suited to educational environments, Gate App can be configured for schools, colleges, offices, commercial buildings, and other organisations. It provides a centralised way to record arrivals and departures, monitor who is on site, and support reception and administrative activities.
-
-The system is designed to be adaptable, allowing organisations to configure locations, visitor details, staff information, and other settings to suit their operational requirements.
-
-## Features
-
-- **Staff check-in and check-out:** Record staff arrival and departure times.
-- **Visitor check-in and check-out:** Record visitor details and track visits.
-- **On-site monitoring:** Allow authorised reception staff to view people currently on site.
-- **Visitor badge printing:** Support visitor badge printing using a compatible label printer and configured templates.
-- **Reception management:** Allow authorised users to manage visitor records and complete check-outs when required.
-- **Staff and visitor records:** Maintain records of arrivals and departures for operational purposes.
-- **Search and reporting:** Enable administrators to search records and review visit information, where supported by the application.
-- **Multiple locations:** Support configuration for organisations with multiple sites, subject to application settings.
-- **Customisable configuration:** Adapt fields, locations, branding, and other settings for different organisations.
-- **Education-friendly design:** Suitable for school reception areas, staff attendance recording, parent and contractor visits, and other authorised site visits.
-- **Business adaptability:** Can be configured for general office, corporate, and commercial environments.
-- **Touchscreen support:** Retain virtual keyboard functionality where supported and enabled in the existing application.
-
-## Intended Use
-
-Gate App can support the following environments:
-
-- Schools and colleges
-- Nurseries and educational facilities
-- Corporate offices
-- Reception and front-desk environments
-- Commercial premises
-- Multi-site organisations
-
-Organisations should configure the application according to their visitor procedures, staff attendance requirements, privacy obligations, and security policies.
-
-## System Requirements
-
-### Server Requirements
-
-The original application was designed for the following server-side technologies:
-
-- Apache 2.2 or 2.4 and compatible web servers
-- PHP 5.6 or PHP 7 and later compatible versions
-- MySQL 5.5, MySQL 5.7, or compatible versions
-
-**Important:** These are the historical requirements of the original application, not a recommendation to deploy an old PHP or MySQL version today. Before deployment, assess and update the application for a currently supported PHP version, database version, and security configuration.
-
-### Client Requirements
-
-- A modern web browser
-- HTML5 support
-- JavaScript enabled
-- Network access to the application
-
-### Badge Printing Requirements
-
-If using the original badge-printing functionality:
-
-- A compatible DYMO LabelWriter printer
-- Compatible labels, such as DYMO 99012, when using the existing template
-- An appropriate printer-sharing or printing configuration
-
-Badge templates and printer settings may need to be adapted for other printers and label sizes.
-
-## Installation
-
-1. Extract the application files into the web server's application directory.
-2. Configure the application settings in `settings.php`, using the existing configuration options.
-3. Replace the default badge logo with your organisation's logo, if badge printing is required.
-4. Configure database connection details and create the required database and database user.
-5. Review web server access controls and protect administration and reception pages.
-6. Configure badge templates, languages, locations, and other available options.
-7. Run the supplied installation script, if supported by the version being deployed, or create the database tables manually.
-8. Test staff and visitor workflows, access permissions, check-in/check-out records, and printing before putting the application into production.
-
 ## Database Setup
 
-The original application uses MySQL and includes a visitor records table.
+Gate App uses a MySQL database named `schoolgate` to store administrator accounts, staff records, pupil records, staff attendance, and visitor check-in/check-out information.
 
-Example database creation statement:
+### Requirements
+
+- MySQL 8.0 or a compatible supported version
+- A MySQL user with permission to create and manage the database and tables
+- PHP configured with the appropriate MySQL database driver
+
+### 1. Create the Database and Tables
+
+Run the following SQL script using MySQL Workbench, phpMyAdmin, or the MySQL command line.
 
 ```sql
-CREATE DATABASE IF NOT EXISTS visitors
-CHARACTER SET utf8
-COLLATE utf8_unicode_ci;
+-- Create the database
+CREATE DATABASE IF NOT EXISTS schoolgate
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+USE schoolgate;
+
+-- Administrator accounts
+CREATE TABLE IF NOT EXISTS admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
+
+-- Staff records
+CREATE TABLE IF NOT EXISTS staff (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    role VARCHAR(50)
+);
+
+-- Staff attendance and clock-in/clock-out records
+CREATE TABLE IF NOT EXISTS staff_attendance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    staff_id INT NOT NULL,
+    clock_in DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    clock_out DATETIME NULL,
+    method VARCHAR(50),
+    CONSTRAINT fk_staff_attendance_staff
+        FOREIGN KEY (staff_id)
+        REFERENCES staff(id)
+        ON DELETE CASCADE
+);
+
+-- Pupil records
+CREATE TABLE IF NOT EXISTS pupil (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    year_group VARCHAR(20),
+    reason VARCHAR(255),
+    clock_in DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Visitor check-in/check-out records
+CREATE TABLE IF NOT EXISTS visitors_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    company VARCHAR(255),
+    reason VARCHAR(255),
+    vehicle_number VARCHAR(50),
+    clock_in DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    clock_out DATETIME NULL,
+    method VARCHAR(100),
+    photo LONGBLOB
+);
 ```
 
-The original visitor table contains fields for visitor identity, location, organisation, visit details, vehicle information, legal acknowledgements, and arrival/departure times.
+### 2. Database Table Overview
 
-The database structure must be reviewed and extended if Gate App is to support dedicated staff accounts, authenticated staff attendance, role-based access, or additional reporting.
+| Table | Purpose |
+|---|---|
+| `admins` | Stores administrator usernames and password hashes. |
+| `staff` | Stores staff details, email addresses, and roles. |
+| `staff_attendance` | Records staff clock-in and clock-out times. |
+| `pupil` | Records pupil information and arrival details. |
+| `visitors_log` | Records visitor details, visit reasons, arrival/departure times, and optional photos. |
 
-## Security and Access Control
+### 3. Configure the Database Connection
 
-Gate App should be deployed with appropriate security controls, including:
+Update the application's database configuration file with the appropriate connection details.
 
-- Authentication for staff and administrative users.
-- Role-based permissions for receptionists and administrators.
-- Secure password storage and session handling.
-- Input validation and protection against SQL injection.
-- HTTPS for all web access.
-- Restricted access to administrative pages.
-- Appropriate database permissions and regular backups.
-- Defined data retention and privacy procedures.
+Example PHP configuration:
 
-The original application documentation describes separate database permissions for visitor-facing, reception, and administrative functions. These permissions should be reviewed against the actual implementation before deployment.
+```php
+<?php
+$host = 'localhost';
+$dbname = 'schoolgate';
+$username = 'your_database_user';
+$password = 'your_database_password';
 
-## Configuration and Customisation
+$dsn = "mysql:host=$host;dbname=$dbname;charset=utf8mb4";
 
-Gate App is intended to be adaptable to different organisational requirements.
+$options = [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES => false,
+];
 
-Depending on the functionality implemented, customisation may include:
+$pdo = new PDO($dsn, $username, $password, $options);
+```
 
-- Organisation name and logo
-- Site and building locations
-- Staff and visitor categories
-- Visitor and staff check-in/check-out fields
-- Badge layouts and printing settings
-- Languages and interface text
-- Administrative access and reporting
-- Integration with other systems
+Replace the example database username and password with your actual credentials. Store production credentials securely and do not commit them to source control.
 
-Any additional staff-management, authentication, or integration features must be implemented and tested before being presented as available functionality.
+### 4. Administrator Account Setup
 
-## Third-Party Software and Licensing
+The `admins` table stores administrator accounts. Passwords must be stored as secure hashes generated using PHP's `password_hash()` function, not as plain text.
 
-Gate App incorporates or is derived from an existing open-source visitor-management application.
+Example:
 
-The applicable third-party copyright notices, attribution requirements, Apache License 2.0 terms, and notices for bundled libraries must be retained in accordance with their respective licences.
+```php
+$hash = password_hash($password, PASSWORD_DEFAULT);
+```
 
-Where applicable, refer to the accompanying `NOTICE` file for information about third-party components.
+During login, verify the supplied password using:
 
-Apache License 2.0:
+```php
+password_verify($password, $admin['password']);
+```
 
-http://www.apache.org/licenses/LICENSE-2.0
+Create the first administrator through a secure setup process or a protected account-creation script. Do not use a publicly accessible registration page to create administrators.
 
-The software is provided on an "AS IS" basis, without warranties or conditions of any kind, as specified by the applicable licence.
+### 5. Attendance and Visitor Tracking
 
-## Disclaimer
+- Staff clock-in creates a record in `staff_attendance`.
+- Staff clock-out updates the relevant record's `clock_out` field.
+- Visitor check-in creates a record in `visitors_log`.
+- Visitor check-out updates the visitor's `clock_out` field.
+- Pupil arrival information is recorded in `pupil`.
 
-Gate App is intended to assist with staff and visitor record-keeping. It does not, by itself, guarantee physical security, regulatory compliance, or accurate attendance records. Organisations are responsible for configuring, securing, testing, and operating the system appropriately.
+The application should ensure that clock-out updates the correct active record and that duplicate active sessions are handled appropriately.
 
-## About Gate App
+### 6. Important Notes
 
-Gate App provides a foundation for managing staff and visitor movements within an organisation. Its configuration can be adapted to educational and commercial environments, with further development available to meet specific operational requirements.
+- The `staff_attendance` table references `staff(id)` through a foreign key.
+- Deleting a staff record also deletes its attendance history because `ON DELETE CASCADE` is enabled. For audit and safeguarding purposes, consider using inactive staff records instead of deleting staff.
+- The pupil table currently records arrival details only. Add a `clock_out` field and any required collection or safeguarding fields if pupil departures need to be tracked.
+- The visitor `photo` field uses `LONGBLOB`. Consider storing photos in controlled file storage and retaining only a file reference in the database, with suitable access controls and retention policies.
+- Add indexes and validation as required for reporting and searching.
+- Back up the database regularly and restrict access to personal information.
+- Use a separate, least-privilege database account for the application rather than a MySQL root account.
