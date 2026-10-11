@@ -1,6 +1,6 @@
-## Database Setup
+## Gate App - Open Source staff & visitor management system - Shebeer Ahammed
 
-Gate App uses a MySQL database named `schoolgate` to store administrator accounts, staff records, pupil records, staff attendance, and visitor check-in/check-out information.
+Gate App uses a MySQL database named `gate` to store administrator accounts, staff records, pupil records, staff attendance, and visitor check-in/check-out information.
 
 ### Requirements
 
